@@ -1,15 +1,16 @@
-name = "rustwasm-image-dimension"
+name = "rustwasm-namnsdag"
 type = "javascript"
 workers_dev = true
 compatibility_date = "2021-08-27"
-compatibility_flags = [ "formdata_parser_supports_files" ]
-account_id = "46945a1d3ac9f33b5645909221eb2f58"
+account_id = ""
 
 [vars]
-WORKERS_RS_VERSION = "0.0.4"
+WORKERS_RS_VERSION = "0.0.7"
+SLACK_HOOK = ""
+SLACK_URL = ""
 
 [build]
-command = "cargo install -q worker-build && worker-build --release"
+command = "cargo install --path worker-build && worker-build --release"
 
 [build.upload]
 dir    = "build/worker"
@@ -19,3 +20,7 @@ main   = "./shim.mjs"
 [[build.upload.rules]]
 globs = ["**/*.wasm"]
 type  = "CompiledWasm"
+
+[triggers]
+crons = ["0 10 * * *"]
+# crons = ["*/1 * * * *"]

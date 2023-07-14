@@ -1,13 +1,10 @@
-use image::{GenericImageView};
-use worker::*;
-use serde_json::json;
-use lazy_static::lazy_static;
-use regex::Regex;
 use cfg_if::cfg_if;
+use serde_json::json;
+use worker::*;
 
-lazy_static! {
-    static ref IMAGE_REGEX: Regex = Regex::new("image/").unwrap();
-}
+mod formatter;
+mod namnsdag;
+mod slack;
 
 cfg_if! {
     // https://github.com/rustwasm/console_error_panic_hook#readme
@@ -20,51 +17,44 @@ cfg_if! {
     }
 }
 
-#[event(fetch)]
-pub async fn main(mut req: Request, _env: Env) -> Result<Response> {
-    set_panic_hook();
+fn log_event(event: &worker::Scheduled) {
     console_log!(
-        "{} {}, located at: {:?}, within: {}",
-        req.method().to_string(),
-        req.path(),
-        req.cf().coordinates().unwrap_or_default(),
-        req.cf().region().unwrap_or("unknown region".into())
+        "cron={}
+scheduledTime={}",
+        event.cron(),
+        event.scheduled_time()
     );
+}
 
-    if !matches!(req.method(), Method::Post) {
-        return Response::error("Method Not Allowed", 405);
-    }
+#[event(scheduled)]
+pub async fn main(event: Scheduled, env: worker::Env) -> worker::Result<()> {
+    set_panic_hook();
+    log_event(&event);
 
-    if let Ok(content_type) = req.headers().get("Content-Type") {
-        if let Some(content_type) = content_type {
-            if !IMAGE_REGEX.is_match(&content_type) {
-                return Response::error("Media Not Allowed", 415);
+    let slack_url = env
+        .secret("SLACK_URL")
+        .map(|f| f.to_string())
+        .expect("SLACK_HOOK env variable not set.");
+
+    let (slack_message, err): (serde_json::Value, Option<reqwest_wasm::Error>) =
+        match namnsdag::get_namnsdag().await {
+            Ok(payload) => {
+                let name_vector = namnsdag::get_names(&payload);
+                let name_string = formatter::format_names_string(name_vector);
+
+                let namn_formatted =
+                    format!("Idag har {} namnsdag. Ping <@UR2FY3P5H>", name_string);
+
+                (json!({ "text": namn_formatted }), None)
             }
-        } else {
-            return Response::error("Bad Request", 400)
-        }
-    } else { 
-        return Response::error("Bad Request", 400)
+            Err(err) => (json!({ "text": err.to_string() }), Some(err)),
+        };
+
+    if let Some(err) = err {
+        console_log!("{}", err);
     }
 
-    match req.bytes().await {
-        Ok(buffer) => {
-            match image::load_from_memory(&buffer) {
-                Ok(img) => {
-                    let (x, y) = img.dimensions();
-                    let val = json!({
-                        "x": x, 
-                        "y": y
-                    });
-                    Response::from_json(&val)
-                }
-                Err(err) => {
-                    Response::error("Bad Request", 400)
-                }
-            }
-        },
-        Err(err) => {
-            Response::error("Bad Request", 400)
-        }
-    }
+    slack::send_to_slack(&slack_url, &slack_message).await;
+
+    Ok(())
 }

@@ -1,0 +1,14 @@
+[package]
+authors = ["Cloudflare Workers Team <workers@cloudflare.com>"]
+edition = "2018"
+name    = "worker-build"
+version = "0.0.3"
+license = "Apache-2.0"
+repository = "https://github.com/cloudflare/workers-rs/tree/main/worker-build"
+readme = "README.md"
+description = "This is a tool to be used as a custom build command for a Cloudflare Workers `workers-rs` project."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"

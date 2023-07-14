@@ -1,5 +1,5 @@
 [package]
-name = "rustwasm-image-dimension"
+name = "rustwasm-namnsdag"
 version = "0.1.0"
 authors = ["Emil Sivervik <emil@sivervik.com>"]
 edition = "2018"
@@ -10,14 +10,17 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = ["console_error_panic_hook"]
 
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
+
 [dependencies]
 cfg-if = "0.1.2"
-worker = "0.0.4"
+worker = { path = "worker" }
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.67"
-image = { version="0.23.14", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }
-lazy_static = "1.4.0"
-regex = "1"
-base64 = "0.13.0"
+reqwest-wasm = { version = "0.11.0", features = ["json"] }
+chrono = { version = "0.4.19", features = ["wasmbind"] }
+
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

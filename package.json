@@ -1,0 +1,24 @@
+{
+  "name": "rustwasm-namnsdag",
+  "version": "1.0.0",
+  "description": "Simple proof of concept app used to generate width and height from images. It's built with Rust and compiled to wasm and hosted as a javascript Cloudflare Worker.",
+  "main": "wasm.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emilsivervik/rustwasm-image-dimension.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emilsivervik/rustwasm-image-dimension/issues"
+  },
+  "homepage": "https://github.com/emilsivervik/rustwasm-image-dimension#readme",
+  "dependencies": {
+    "node-abort-controller": "^3.0.1",
+    "node-fetch": "^2.6.6"
+  }
+}
